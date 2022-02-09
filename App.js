@@ -1,12 +1,13 @@
 import React, {useState, useEffect} from 'react';
 import {SafeAreaView, Platform, StyleSheet, PermissionsAndroid, Dimensions} from 'react-native';
-import MapView from 'react-native-maps';
+import MapView, {Marker} from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 
 const {width, height} = Dimensions.get('screen');
 
 export default function App(){
   const [region, setRegion] = useState(null);
+  const [markers, setMarkers] = useState([]);
 
   useEffect(() => {
     getMyLocation();
@@ -30,6 +31,26 @@ export default function App(){
     })
   }
 
+  function newMarker(e){
+    let dados = {
+      key: markers.length,
+      coords:{
+        latitude: e.nativeEvent.coordinate.latitude,
+        longitude: e.nativeEvent.coordinate.longitude
+      },
+      pinColor: '#FF0000'
+    }
+
+    setRegion({
+        latitude: e.nativeEvent.coordinate.latitude,
+        longitude: e.nativeEvent.coordinate.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.421
+    })
+
+    setMarkers(oldArray => [...oldArray, dados]) //tudo o q já tinha e vai acrescentando conforme clicar no mapa
+  }
+
   return(
     <SafeAreaView style={styles.container}>
       <MapView
@@ -47,8 +68,18 @@ export default function App(){
         minZoomLevel={17}
         showsUserLocation={true}
         loadingEnabled={true}
-      style={styles.map}
-  />
+        onPress={(e) => newMarker()}
+        style={styles.map}>
+          {markers.map(marker => {
+            return(
+              <Marker 
+                key={marker.key}
+                coordinate={marker.coords}
+                pinColor={marker.pinColor}
+              />
+            )
+          })}
+      </MapView>
     </SafeAreaView>
   )
 }
